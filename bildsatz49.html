@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Sprachassistent: Bild-Aspekt-Check</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --error: #e74c3c;
+            --bg: #f0f3f5;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-style: normal !important;
+            background-color: var(--bg);
+            color: var(--primary);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--white);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        h1 { text-align: center; border-bottom: 3px solid var(--secondary); padding-bottom: 10px; margin-top: 0; }
+        
+        .intro {
+            background: #eef6fc;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 15px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+
+        .image-sim {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            background: #f8f9fa;
+            width: 100%;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px;
+        }
+
+        .description {
+            font-size: 0.9rem;
+            color: #666;
+            text-align: center;
+            margin-bottom: 15px;
+            min-height: 40px;
+        }
+
+        .options {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .opt-btn {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid var(--secondary);
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.2s;
+            font-style: normal !important;
+        }
+
+        .opt-btn:hover { background: #f0f8ff; }
+
+        /* Status-Farben */
+        .opt-btn.correct { background-color: var(--success) !important; border-color: var(--success) !important; color: white !important; }
+        .opt-btn.incorrect { background-color: var(--error) !important; border-color: var(--error) !important; color: white !important; }
+
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+        }
+
+        .btn-action {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+        }
+
+        .btn-reset { background: #95a5a6; }
+        .btn-solve { background: var(--secondary); }
+
+        @media (max-width: 600px) {
+            .grid { grid-template-columns: 1fr; }
+            .main-container { padding: 15px; }
+        }
+
+        span, button, div { font-style: normal !important; }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <h1>Imperativ: Bild-Situationen 🖼️</h1>
+    
+    <div class="intro">
+        <strong>Anleitung:</strong> Schau dir die Emojis und die Beschreibung an. Welcher Imperativ passt zur Situation? <br>
+        Klicke auf die richtige Form. Grün = Richtig, Rot = Falsch.
+    </div>
+
+    <div class="grid" id="exercise-grid"></div>
+
+    <div class="controls">
+        <button class="btn-action btn-reset" onclick="resetAll()">🔄 Zurücksetzen</button>
+        <button class="btn-action btn-solve" onclick="solveAll()">💡 Lösungen zeigen</button>
+    </div>
+</div>
+
+<script>
+    const tasks = [
+        { img: "😠 🛌", desc: "Strenge Mutter zum Kind: „Steh auf!“ (Befehl)", opts: ["Вставай", "Встань"], correct: 1 },
+        { img: "😊 🚪", desc: "Freundlicher Gastgeber: „Kommen Sie rein!“ (Einladung)", opts: ["Входите", "Войдите"], correct: 0 },
+        { img: "🚫 🚬", desc: "Verbotsschild: „Rauchen Sie nicht!“ (Verbot)", opts: ["Не курите", "Не покурите"], correct: 0 },
+        { img: "⚠️ 🧊", desc: "Warnung vor Glatteis: „Fall nicht!“ (Warnung)", opts: ["Не падай", "Смотри не упади"], correct: 1 },
+        { img: "📅 📞", desc: "Wunsch: „Ruf mich öfter an!“ (Wiederholung)", opts: ["Звони", "Позвони"], correct: 0 },
+        { img: "🦮 👮", desc: "Hundetrainer: „Sitz!“ (Strenge Kommandos)", opts: ["Сиди", "Сидеть"], correct: 1 },
+        { img: "🎁 🤩", desc: "Freunde: „Öffne das Geschenk!“ (Ergebnis)", opts: ["Открывай", "Открой"], correct: 1 },
+        { img: "👨‍🏫 📚", desc: "Lehrer: „Lies dieses Buch.“ (Allgemeiner Rat)", opts: ["Читай", "Прочитай"], correct: 0 },
+        { emoji: "✍️ 🤝", desc: "Einmalige Bitte: „Gib mir den Stift.“ (Einmalig)", opts: ["Давай", "Дай"], correct: 1 },
+        { img: "🏠 🚶", desc: "Erlaubnis: „Geh ruhig rein.“ (Vorgang/Erlaubnis)", opts: ["Входи", "Войди"], correct: 0 },
+        { img: "📵 🤫", desc: "Im Kino: „Telefoniere nicht!“ (Verbot)", opts: ["Не звони", "Не позвони"], correct: 0 },
+        { img: "🍳 🥣", desc: "Mutter zum Kind: „Iss den Brei auf!“ (Ergebnis)", opts: ["Ешь", "Съешь"], correct: 1 },
+        { img: "📪 ✉️", desc: "Bitte: „Wirf den Brief ein.“ (Einmalig)", opts: ["Опускай", "Опусти"], correct: 1 },
+        { img: "😴 ☕", desc: "Rat: „Trink einen Kaffee.“ (Prozess/Rat)", opts: ["Пей", "Выпей"], correct: 0 },
+        { img: "⏰ 🏃", desc: "Warnung: „Verspäte dich nicht!“ (Einmalig/Warnung)", opts: ["Не опаздывай", "Смотри не опоздай"], correct: 1 },
+        { img: "🍪 🤲", desc: "Gastfreundschaft: „Nehmen Sie Kekse!“ (Einladung)", opts: ["Берите", "Возьмите"], correct: 0 },
+        { img: "🗝️ 🧠", desc: "Warnung: „Vergiss den Schlüssel nicht!“ (Warnung vor Versehen)", opts: ["Не забывай", "Смотри не забудь"], correct: 1 },
+        { img: "🐶 🦴", desc: "Kommando: „Warten!“ (Strenge Befehlsform)", opts: ["Жди", "Ждать"], correct: 1 },
+        { img: "🗣️ 🤫", desc: "In der Bibliothek: „Schrei nicht!“ (Verbot)", opts: ["Не кричи", "Не крикни"], correct: 0 },
+        { img: "🍎 🛒", desc: "Bitte: „Kauf Äpfel.“ (Konkretes Ergebnis)", opts: ["Покупай", "Купи"], correct: 1 }
+    ];
+
+    function renderTasks() {
+        const grid = document.getElementById('exercise-grid');
+        tasks.forEach((task, idx) => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.id = `card-${idx}`;
+            card.innerHTML = `
+                <div class="image-sim">${task.img || task.emoji}</div>
+                <div class="description">${task.desc}</div>
+                <div class="options">
+                    <button class="opt-btn" onclick="checkAnswer(${idx}, 0)">${task.opts[0]}</button>
+                    <button class="opt-btn" onclick="checkAnswer(${idx}, 1)">${task.opts[1]}</button>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function checkAnswer(taskIdx, optIdx) {
+        const card = document.getElementById(`card-${taskIdx}`);
+        const btns = card.querySelectorAll('.opt-btn');
+        const correctIdx = tasks[taskIdx].correct;
+
+        btns.forEach(b => b.classList.remove('correct', 'incorrect'));
+
+        if (optIdx === correctIdx) {
+            btns[optIdx].classList.add('correct');
+        } else {
+            btns[optIdx].classList.add('incorrect');
+            btns[correctIdx].classList.add('correct');
+        }
+    }
+
+    function solveAll() {
+        tasks.forEach((task, idx) => {
+            const btns = document.querySelectorAll(`#card-${idx} .opt-btn`);
+            btns.forEach(b => b.classList.remove('correct', 'incorrect'));
+            btns[task.correct].classList.add('correct');
+        });
+    }
+
+    function resetAll() {
+        document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('correct', 'incorrect'));
+    }
+
+    window.onload = renderTasks;
+</script>
+
+</body>
+</html>
