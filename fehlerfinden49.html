@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Sprachassistent: Aspekt-Detektiv</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --error: #e74c3c;
+            --bg: #f4f7f6;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-style: normal !important;
+            background-color: var(--bg);
+            color: var(--primary);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--white);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        h1 { text-align: center; color: var(--primary); margin-bottom: 10px; }
+        .subtitle { text-align: center; color: var(--secondary); margin-bottom: 30px; font-weight: bold; }
+
+        .intro {
+            background: #eef6fc;
+            padding: 20px;
+            border-left: 5px solid var(--secondary);
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .task-card {
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .context-info {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sentence-box {
+            font-size: 1.2rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 10px;
+            background: #fdfdfd;
+            border-radius: 8px;
+            line-height: 1.8;
+        }
+
+        .word {
+            padding: 2px 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+            font-style: normal !important;
+            border: 1px solid transparent;
+        }
+
+        .word:hover { background: #f0f0f0; border-color: #ddd; }
+
+        /* Status-Farben */
+        .word.correct-find { background-color: var(--success); color: white; border-color: var(--success); } /* Das falsche Wort wurde gefunden */
+        .word.wrong-click { background-color: var(--error); color: white; border-color: var(--error); } /* Ein richtiges Wort wurde fälschlich angeklickt */
+
+        .correction-span {
+            color: var(--success);
+            font-weight: bold;
+            margin-left: 10px;
+            font-size: 1rem;
+            display: none;
+        }
+
+        .btn-group {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            font-size: 0.85rem;
+        }
+
+        .btn-reset { background-color: #95a5a6; }
+        .btn-solve { background-color: var(--secondary); }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .sentence-box { font-size: 1.1rem; }
+        }
+
+        /* Kyrillische Schrift explizit schützen */
+        span, div, button { font-style: normal !important; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Aspekt-Detektiv 🔍</h1>
+    <div class="subtitle">Finde den Fehler im Imperativ!</div>
+
+    <div class="intro">
+        <strong>Anleitung:</strong> In jedem Satz gibt es einen Fehler beim Gebrauch von NSV oder SV. 
+        Klicke auf das <b>falsche Wort</b>. Wenn du richtig liegst, wird es grün markiert und die Korrektur erscheint.
+    </div>
+
+    <div id="tasks-root"></div>
+
+</div>
+
+<script>
+    const taskData = [
+        { emoji: "🍎", context: "Signalwort 'Immer' (Wiederholung)", sentence: ["Всегда", "купи", "хлеб", "здесь."], errorIdx: 1, correctWord: "покупай" },
+        { emoji: "🚫", context: "Allgemeines Verbot (не + NSV)", sentence: ["Не", "забудь", "нас", "в", "Германии!"], errorIdx: 1, correctWord: "забывай" },
+        { emoji: "⚠️", context: "Warnung (смотри не + SV)", sentence: ["Смотри", "не", "забывай", "ключи", "дома."], errorIdx: 2, correctWord: "забудь" },
+        { emoji: "🚶", context: "Einladung zum Eintreten (NSV)", sentence: ["Войдите", "пожалуйста,", "садитесь!"], errorIdx: 0, correctWord: "Входите" },
+        { emoji: "🏠", context: "Warnung vor dem Öffnen (SV)", sentence: ["Смотри", "не", "открывай", "эту", "дверь!"], errorIdx: 2, correctWord: "открой" },
+        { emoji: "📞", context: "Regelmäßige Handlung (NSV)", sentence: ["Позвони", "мне", "часто,", "я", "жду."], errorIdx: 0, correctWord: "Звони" },
+        { emoji: "🚫", context: "Striktes Verbot (NSV)", sentence: ["Никогда", "не", "сделай", "этого!"], errorIdx: 2, correctWord: "делай" },
+        { emoji: "🍪", context: "Einladung zum Bedienen (NSV)", sentence: ["Возьмите", "печенье,", "угощайтесь!"], errorIdx: 0, correctWord: "Берите" },
+        { emoji: "📅", context: "Gewohnheit (NSV)", sentence: ["Каждый", "день", "вымой", "посуду."], errorIdx: 2, correctWord: "мой" },
+        { emoji: "📖", context: "Prozess/Dauer (NSV)", sentence: ["Ты", "долго", "прочитай", "эту", "книгу."], errorIdx: 2, correctWord: "читай" },
+        { emoji: "🏙️", context: "Wunsch nach Wiederholung (NSV)", sentence: ["Приедь", "к", "нам", "чаще!"], errorIdx: 0, correctWord: "Приезжай" },
+        { emoji: "⚠️", context: "Warnung vor Verspätung (SV)", sentence: ["Смотри", "не", "опаздывай", "на", "урок!"], errorIdx: 2, correctWord: "опоздай" },
+        { emoji: "🚫", context: "Allgemeines Verbot (NSV)", sentence: ["Не", "покури", "в", "этом", "здании."], errorIdx: 1, correctWord: "кури" },
+        { emoji: "🚪", context: "Konkrete Bitte (SV)", sentence: ["Открывай", "дверь,", "я", "пришёл."], errorIdx: 0, correctWord: "Открой" },
+        { emoji: "✍️", context: "Allgemeiner Rat (NSV)", sentence: ["Напиши", "слова", "в", "тетрадь", "всегда."], errorIdx: 0, correctWord: "Пиши" },
+        { emoji: "🥤", context: "Warnung (SV)", sentence: ["Смотри", "не", "проливай", "воду!"], errorIdx: 2, correctWord: "пролей" },
+        { emoji: "🐕", context: "Strenges Kommando (Infinitiv nötig)", sentence: ["Сиди", "и", "жди", "здесь!"], errorIdx: 0, correctWord: "Сидеть" },
+        { emoji: "🛑", context: "Verbot (NSV)", sentence: ["Не", "открой", "окно,", "мне", "холодно."], errorIdx: 1, correctWord: "открывай" },
+        { emoji: "📝", context: "Einmaliges Ergebnis (SV)", sentence: ["Записывай", "мой", "номер", "телефона."], errorIdx: 0, correctWord: "Запиши" },
+        { emoji: "⚠️", context: "Warnung vor Verlust (SV)", sentence: ["Смотри", "не", "теряй", "паспорт!"], errorIdx: 2, correctWord: "потеряй" }
+    ];
+
+    function renderTasks() {
+        const root = document.getElementById('tasks-root');
+        taskData.forEach((task, tIdx) => {
+            const card = document.createElement('div');
+            card.className = 'task-card';
+            card.id = `task-${tIdx}`;
+
+            card.innerHTML = `
+                <div class="context-info">${task.emoji} <b>Kontext:</b> ${task.context}</div>
+                <div class="sentence-box">
+                    ${task.sentence.map((word, wIdx) => `
+                        <span class="word" onclick="handleWordClick(${tIdx}, ${wIdx})">${word}</span>
+                    `).join('')}
+                    <span class="correction-span" id="corr-${tIdx}"> → ${task.correctWord} ✅</span>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-reset" onclick="resetTask(${tIdx})">Zurücksetzen</button>
+                    <button class="btn btn-solve" onclick="solveTask(${tIdx})">Lösung</button>
+                </div>
+            `;
+            root.appendChild(card);
+        });
+    }
+
+    function handleWordClick(tIdx, wIdx) {
+        const card = document.getElementById(`task-${tIdx}`);
+        const words = card.querySelectorAll('.word');
+        const correction = document.getElementById(`corr-${tIdx}`);
+        
+        if (wIdx === taskData[tIdx].errorIdx) {
+            // Richtig gefunden!
+            words[wIdx].classList.add('correct-find');
+            words[wIdx].classList.remove('wrong-click');
+            correction.style.display = 'inline';
+        } else {
+            // Falsches Wort angeklickt
+            words[wIdx].classList.add('wrong-click');
+        }
+    }
+
+    function solveTask(tIdx) {
+        const card = document.getElementById(`task-${tIdx}`);
+        const words = card.querySelectorAll('.word');
+        const errIdx = taskData[tIdx].errorIdx;
+        const correction = document.getElementById(`corr-${tIdx}`);
+
+        words.forEach(w => w.classList.remove('wrong-click', 'correct-find'));
+        words[errIdx].classList.add('correct-find');
+        correction.style.display = 'inline';
+    }
+
+    function resetTask(tIdx) {
+        const card = document.getElementById(`task-${tIdx}`);
+        const words = card.querySelectorAll('.word');
+        const correction = document.getElementById(`corr-${tIdx}`);
+
+        words.forEach(w => w.classList.remove('wrong-click', 'correct-find'));
+        correction.style.display = 'none';
+    }
+
+    window.onload = renderTasks;
+</script>
+
+</body>
+</html>
