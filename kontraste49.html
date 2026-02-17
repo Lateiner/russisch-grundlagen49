@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Sprachassistent: Imperativ-Kontraste</title>
+    <!-- Polyfill für Drag & Drop auf Touch-Geräten -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --error: #e74c3c;
+            --bg: #f4f7f6;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--primary);
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--white);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 {
+            color: var(--primary);
+            border-bottom: 3px solid var(--secondary);
+            padding-bottom: 10px;
+        }
+
+        .intro-box {
+            background: #eef6fc;
+            padding: 20px;
+            border-left: 5px solid var(--secondary);
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .exercise-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            background: #fafafa;
+        }
+
+        /* Kontrast-Paare Styling */
+        .contrast-row {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 15px;
+            background: white;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            border: 1px solid #eee;
+        }
+
+        .contrast-context {
+            font-weight: bold;
+            color: var(--secondary);
+            margin-bottom: 5px;
+        }
+
+        .contrast-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .opt-btn {
+            flex: 1;
+            min-width: 150px;
+            padding: 12px;
+            border: 2px solid var(--secondary);
+            background: white;
+            color: var(--primary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .opt-btn.correct {
+            background-color: var(--success) !important;
+            border-color: var(--success) !important;
+            color: white !important;
+        }
+
+        .opt-btn.incorrect {
+            background-color: var(--error) !important;
+            border-color: var(--error) !important;
+            color: white !important;
+        }
+
+        /* Dropdown Styling */
+        .task-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: white;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        select {
+            padding: 10px;
+            border-radius: 6px;
+            border: 2px solid #ccc;
+            font-size: 1rem;
+            min-width: 200px;
+            transition: border 0.3s;
+        }
+
+        select.correct { border-color: var(--success); background-color: #d4edda; }
+        select.incorrect { border-color: var(--error); background-color: #f8d7da; }
+
+        /* Drag & Drop */
+        .pool {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 15px;
+            background: #eee;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            min-height: 60px;
+        }
+
+        .drop-zones {
+            display: flex;
+            gap: 15px;
+        }
+
+        .zone {
+            flex: 1;
+            min-height: 120px;
+            border: 3px dashed var(--secondary);
+            border-radius: 10px;
+            padding: 10px;
+            background: #fff;
+        }
+
+        .item {
+            background: var(--primary);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: grab;
+            user-select: none;
+        }
+
+        .item.correct-item { background-color: var(--success) !important; }
+        .item.incorrect-item { background-color: var(--error) !important; }
+
+        .btn-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+        }
+
+        .btn-res { background: #7f8c8d; }
+        .btn-sol { background: var(--secondary); }
+
+        @media (max-width: 600px) {
+            .task-row { flex-direction: column; align-items: stretch; }
+            .drop-zones { flex-direction: column; }
+            .opt-btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russisch: Imperativ (NSV & SV)</h1>
+
+    <div class="intro-box">
+        <h2>Kurze Wiederholung</h2>
+        <p><strong>NSV (Unvollendet):</strong> Prozess, Wiederholung, Einladung oder Verbot („не“ + NSV).</p>
+        <p><strong>SV (Vollendet):</strong> Einmaliges Ergebnis, konkrete Bitte oder Warnung („смотри не“ + SV).</p>
+    </div>
+
+    <!-- TEIL 1: Der feine Unterschied (Kontrast-Paare) (Aufgaben 1-5) -->
+    <div class="exercise-section" id="section1">
+        <h2>Teil 1: „Der feine Unterschied“</h2>
+        <p>Klicke auf den Satz, der zur beschriebenen Situation passt.</p>
+
+        <div class="contrast-row">
+            <div class="contrast-context">1. Nimm den Stift (er gehört mir, ich erlaube es dir persönlich).</div>
+            <div class="contrast-options" data-correct="Возьми ручку">
+                <button class="opt-btn" onclick="checkContrast(this, 'Возьми ручку')">Возьми ручку</button>
+                <button class="opt-btn" onclick="checkContrast(this, 'Возьми ручку')">Бери ручку</button>
+            </div>
+        </div>
+
+        <div class="contrast-row">
+            <div class="contrast-context">2. Nimm den Stift (er gehört nicht mir, es ist mir egal).</div>
+            <div class="contrast-options" data-correct="Бери ручку">
+                <button class="opt-btn" onclick="checkContrast(this, 'Бери ручку')">Возьми ручку</button>
+                <button class="opt-btn" onclick="checkContrast(this, 'Бери ручку')">Бери ручку</button>
+            </div>
+        </div>
+
+        <div class="contrast-row">
+            <div class="contrast-context">3. „Komm rein!“ (Höffliche Einladung an der Tür).</div>
+            <div class="contrast-options" data-correct="Входи!">
+                <button class="opt-btn" onclick="checkContrast(this, 'Входи!')">Входи!</button>
+                <button class="opt-btn" onclick="checkContrast(this, 'Входи!')">Войди!</button>
+            </div>
+        </div>
+
+        <div class="contrast-row">
+            <div class="contrast-context">4. „Ruf mich an!“ (Einmalig nach der Reise, Fokus auf das Ergebnis).</div>
+            <div class="contrast-options" data-correct="Позвони мне!">
+                <button class="opt-btn" onclick="checkContrast(this, 'Позвони мне!')">Звони мне!</button>
+                <button class="opt-btn" onclick="checkContrast(this, 'Позвони мне!')">Позвони мне!</button>
+            </div>
+        </div>
+
+        <div class="contrast-row">
+            <div class="contrast-context">5. Warnung: „Pass auf, dass du das Fenster nicht öffnest!“</div>
+            <div class="contrast-options" data-correct="Смотри не открой!">
+                <button class="opt-btn" onclick="checkContrast(this, 'Смотри не открой!')">Смотри не открывай!</button>
+                <button class="opt-btn" onclick="checkContrast(this, 'Смотри ne открой!')">Смотри не открой!</button>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button class="action-btn btn-res" onclick="resetContrast('section1')">Zurücksetzen</button>
+            <button class="action-btn btn-sol" onclick="solveContrast('section1')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- TEIL 2: Situations-Zuordnung (6-10) -->
+    <div class="exercise-section" id="section2">
+        <h2>Teil 2: Situations-Zuordnung</h2>
+        <div class="task-row">
+            <span>6. Ein Gast klopft an die Tür. Was sagst du?</span>
+            <select onchange="validateSelect(this, 'Входите!')">
+                <option value="">-- bitte wählen --</option>
+                <option value="Войдите!">Войдите!</option>
+                <option value="Входите!">Входите!</option>
+            </select>
+        </div>
+        <div class="task-row">
+            <span>7. Ein strenges Verbot: „Mach das nicht!“</span>
+            <select onchange="validateSelect(this, 'Не делай этого!')">
+                <option value="">-- bitte wählen --</option>
+                <option value="Не делай этого!">Не делай этого!</option>
+                <option value="Не сделай этого!">Не сделай этого!</option>
+            </select>
+        </div>
+        <div class="task-row">
+            <span>8. Gewohnheit: „Lies jeden Tag!“</span>
+            <select onchange="validateSelect(this, 'Читай каждый день!')">
+                <option value="">-- bitte wählen --</option>
+                <option value="Читай каждый день!">Читай каждый день!</option>
+                <option value="Прочитай каждый день!">Прочитай каждый день!</option>
+            </select>
+        </div>
+        <div class="task-row">
+            <span>9. Einmalige Bitte: „Lies diesen Brief.“</span>
+            <select onchange="validateSelect(this, 'Прочитай это письмо.')">
+                <option value="">-- bitte wählen --</option>
+                <option value="Читай это письмо.">Читай это письмо.</option>
+                <option value="Прочитай это письмо.">Прочитай это письмо.</option>
+            </select>
+        </div>
+        <div class="task-row">
+            <span>10. Kommando für einen Hund: „Sitz!“</span>
+            <select onchange="validateSelect(this, 'Сидеть!')">
+                <option value="">-- bitte wählen --</option>
+                <option value="Сиди!">Сиди!</option>
+                <option value="Сидеть!">Сидеть!</option>
+            </select>
+        </div>
+
+        <div class="btn-group">
+            <button class="action-btn btn-res" onclick="resetSection('section2')">Zurücksetzen</button>
+            <button class="action-btn btn-sol" onclick="solveSection('section2', ['Входите!', 'Не делай этого!', 'Читай каждый день!', 'Прочитай dieses письмо.', 'Сидеть!'])">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- TEIL 3: Drag & Drop Klassifizierung (11-15) -->
+    <div class="exercise-section" id="section3">
+        <h2>Teil 3: Aspekt-Kategorisierung</h2>
+        <p>Ziehe die Verben in die richtige Kategorie (NSV oder SV).</p>
+        
+        <div class="pool" id="pool3" ondrop="drop(event, 'pool')" ondragover="allowDrop(event)">
+            <div class="item" draggable="true" id="v11" ondragstart="drag(event)" data-type="NSV">открывай</div>
+            <div class="item" draggable="true" id="v12" ondragstart="drag(event)" data-type="SV">открой</div>
+            <div class="item" draggable="true" id="v13" ondragstart="drag(event)" data-type="NSV">покупай</div>
+            <div class="item" draggable="true" id="v14" ondragstart="drag(event)" data-type="SV">купи</div>
+            <div class="item" draggable="true" id="v15" ondragstart="drag(event)" data-type="NSV">звони</div>
+        </div>
+
+        <div class="drop-zones">
+            <div class="zone" id="zone-NSV" ondrop="drop(event, 'NSV')" ondragover="allowDrop(event)"><h3>NSV</h3></div>
+            <div class="zone" id="zone-SV" ondrop="drop(event, 'SV')" ondragover="allowDrop(event)"><h3>SV</h3></div>
+        </div>
+
+        <div class="btn-group">
+            <button class="action-btn btn-res" onclick="resetDrag('section3')">Zurücksetzen</button>
+            <button class="action-btn btn-sol" onclick="solveDrag()">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- TEIL 4: Verständnis (16-20) -->
+    <div class="exercise-section" id="section4">
+        <h2>Teil 4: Warum dieser Aspekt?</h2>
+        <div class="task-row">
+            <span>16. „Не забывай нас!“ — Welcher Grund liegt vor?</span>
+            <select onchange="validateSelect(this, 'Verbot')">
+                <option value="">-- wählen --</option>
+                <option value="Verbot">Allgemeines Verbot (NSV)</option>
+                <option value="Warnung">Warnung vor Versehen (SV)</option>
+            </select>
+        </div>
+        <div class="task-row">
+            <span>17. „Смотри не забудь ключи!“ — Welcher Grund?</span>
+            <select onchange="validateSelect(this, 'Warnung')">
+                <option value="">-- wählen --</option>
+                <option value="Verbot">Allgemeines Verbot (NSV)</option>
+                <option value="Warnung">Warnung vor Versehen (SV)</option>
+            </select>
+        </div>
+        <div class="task-row">
+            <span>18. „Берите, пожалуйста!“ — Warum NSV?</span>
+            <select onchange="validateSelect(this, 'Einladung')">
+                <option value="">-- wählen --</option>
+                <option value="Einladung">Höfliche Einladung</option>
+                <option value="Ergebnis">Einmaliges Ergebnis</option>
+            </select>
+        </div>
+        <div class="task-row">
+            <span>19. „Помоги мне!“ — Warum SV?</span>
+            <select onchange="validateSelect(this, 'Ergebnis')">
+                <option value="">-- wählen --</option>
+                <option value="Prozess">Fokus auf den Prozess</option>
+                <option value="Ergebnis">Fokus auf das Ergebnis</option>
+            </select>
+        </div>
+        <div class="task-row">
+            <span>20. „Сидеть!“ — Was drückt dieser Infinitiv aus?</span>
+            <select onchange="validateSelect(this, 'Kommando')">
+                <option value="">-- wählen --</option>
+                <option value="Bitte">Eine sanfte Bitte</option>
+                <option value="Kommando">Ein militärisches Kommando</option>
+            </select>
+        </div>
+
+        <div class="btn-group">
+            <button class="action-btn btn-res" onclick="resetSection('section4')">Zurücksetzen</button>
+            <button class="action-btn btn-sol" onclick="solveSection('section4', ['Verbot', 'Warnung', 'Einladung', 'Ergebnis', 'Kommando'])">Lösung anzeigen</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- Kontrast-Paare Logik ---
+    function checkContrast(btn, correctVal) {
+        const parent = btn.parentElement;
+        const buttons = parent.querySelectorAll('.opt-btn');
+        const correct = parent.getAttribute('data-correct');
+
+        buttons.forEach(b => b.classList.remove('correct', 'incorrect'));
+
+        if (btn.innerText === correct) {
+            btn.classList.add('correct');
+        } else {
+            btn.classList.add('incorrect');
+            // Zeige die richtige Lösung trotzdem an
+            buttons.forEach(b => { if(b.innerText === correct) b.classList.add('correct'); });
+        }
+    }
+
+    function resetContrast(id) {
+        document.querySelectorAll(`#${id} .opt-btn`).forEach(b => b.classList.remove('correct', 'incorrect'));
+    }
+
+    function solveContrast(id) {
+        document.querySelectorAll(`#${id} .contrast-options`).forEach(div => {
+            const correct = div.getAttribute('data-correct');
+            div.querySelectorAll('.opt-btn').forEach(b => {
+                if(b.innerText === correct) b.classList.add('correct');
+                else b.classList.remove('incorrect', 'correct');
+            });
+        });
+    }
+
+    // --- Dropdown Logik ---
+    function validateSelect(el, correct) {
+        if (el.value === "") { el.classList.remove('correct', 'incorrect'); return; }
+        if (el.value === correct) { el.classList.add('correct'); el.classList.remove('incorrect'); }
+        else { el.classList.add('incorrect'); el.classList.remove('correct'); }
+    }
+
+    function resetSection(id) {
+        document.querySelectorAll(`#${id} select`).forEach(s => {
+            s.value = ""; s.classList.remove('correct', 'incorrect');
+        });
+    }
+
+    function solveSection(id, sols) {
+        document.querySelectorAll(`#${id} select`).forEach((s, i) => {
+            // Wir suchen den korrekten Wert in den Options
+            for(let opt of s.options) {
+                if(opt.value.includes(sols[i]) || sols[i].includes(opt.value) && opt.value !== "") {
+                    s.value = opt.value;
+                    s.classList.add('correct');
+                    break;
+                }
+            }
+        });
+    }
+
+    // --- Drag & Drop Logik ---
+    function allowDrop(ev) { ev.preventDefault(); }
+    function drag(ev) { ev.dataTransfer.setData("text", ev.target.id); }
+
+    function drop(ev, zoneType) {
+        ev.preventDefault();
+        const data = ev.dataTransfer.getData("text");
+        const el = document.getElementById(data);
+        const target = ev.target.closest('.zone') || document.getElementById('pool3');
+        target.appendChild(el);
+
+        if (zoneType === 'pool') {
+            el.classList.remove('correct-item', 'incorrect-item');
+        } else {
+            if (el.getAttribute('data-type') === zoneType) {
+                el.classList.add('correct-item'); el.classList.remove('incorrect-item');
+            } else {
+                el.classList.add('incorrect-item'); el.classList.remove('correct-item');
+            }
+        }
+    }
+
+    function resetDrag(id) {
+        const pool = document.getElementById('pool3');
+        document.querySelectorAll('.item').forEach(item => {
+            pool.appendChild(item);
+            item.classList.remove('correct-item', 'incorrect-item');
+        });
+    }
+
+    function solveDrag() {
+        document.querySelectorAll('.item').forEach(item => {
+            const type = item.getAttribute('data-type');
+            document.getElementById('zone-' + type).appendChild(item);
+            item.classList.add('correct-item');
+        });
+    }
+</script>
+
+</body>
+</html>
