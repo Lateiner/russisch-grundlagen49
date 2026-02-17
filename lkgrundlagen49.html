@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lernkartei: Russisch Imperativ (NSV/SV)</title>
+    <style>
+        :root {
+            --bg-color: #f0fcf4;
+            --primary-green: #27ae60;
+            --secondary-green: #2ecc71;
+            --dark-green: #1e8449;
+            --text-color: #2c3e50;
+            --card-front-bg: #ffffff;
+            --card-back-bg: #e8f5e9;
+            --shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--dark-green);
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+        }
+
+        .progress {
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: var(--primary-green);
+            font-size: 1.1rem;
+        }
+
+        /* Flashcard 3D Flip Design */
+        .flashcard-container {
+            perspective: 1000px;
+            width: 100%;
+            height: 300px;
+            cursor: pointer;
+            margin-bottom: 30px;
+        }
+
+        .flashcard {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            box-shadow: var(--shadow);
+            border-radius: 20px;
+        }
+
+        .flashcard.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            border-radius: 20px;
+            border: 2px solid var(--primary-green);
+        }
+
+        .card-front {
+            background-color: var(--card-front-bg);
+        }
+
+        .card-back {
+            background-color: var(--card-back-bg);
+            transform: rotateY(180deg);
+        }
+
+        .vocab-text {
+            font-size: 1.8rem;
+            font-weight: bold;
+            word-wrap: break-word;
+            max-width: 100%;
+        }
+
+        .card-front .vocab-text {
+            color: var(--dark-green);
+        }
+
+        .side-label {
+            position: absolute;
+            top: 15px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #aaa;
+        }
+
+        /* Controls */
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .btn {
+            background-color: var(--primary-green);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            user-select: none;
+        }
+
+        .btn:hover {
+            background-color: var(--secondary-green);
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-full {
+            grid-column: span 2;
+        }
+
+        .btn-secondary {
+            background-color: #95a5a6;
+        }
+
+        .btn-secondary:hover {
+            background-color: #bdc3c7;
+        }
+
+        .instructions {
+            margin-top: 30px;
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            line-height: 1.4;
+        }
+
+        /* Keyboard hint */
+        kbd {
+            background-color: #eee;
+            border-radius: 3px;
+            border: 1px solid #b4b4b4;
+            box-shadow: 0 1px 1px rgba(0,0,0,.2);
+            color: #333;
+            display: inline-block;
+            font-size: .85em;
+            font-weight: 700;
+            line-height: 1;
+            padding: 2px 4px;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 400px) {
+            .flashcard-container { height: 250px; }
+            .vocab-text { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russisch Imperativ Vokabeln</h1>
+    
+    <div class="progress" id="progress">1 / 42</div>
+
+    <div class="flashcard-container" id="cardContainer">
+        <div class="flashcard" id="flashcard">
+            <div class="card-face card-front">
+                <span class="side-label">Russisch</span>
+                <div class="vocab-text" id="frontText">Загрузка...</div>
+            </div>
+            <div class="card-face card-back">
+                <span class="side-label">Deutsch</span>
+                <div class="vocab-text" id="backText">Laden...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn" id="prevBtn">← Vorherige</button>
+        <button class="btn" id="nextBtn">Nächste →</button>
+        <button class="btn btn-secondary" id="shuffleBtn">🔀 Mischen</button>
+        <button class="btn btn-secondary" id="homeBtn">🏠 Anfang</button>
+    </div>
+
+    <div class="instructions">
+        Tippe auf die Karte zum Umdrehen.<br>
+        Tastatur: <kbd>←</kbd> <kbd>→</kbd> zum Navigieren | <kbd>Leertaste</kbd> / <kbd>Enter</kbd> zum Wenden | <kbd>Pos1</kbd> Anfang
+    </div>
+</div>
+
+<script>
+    // Vokabeldaten
+    const rawData = [
+        ["звони́ть / позвони́ть", "anrufen"],
+        ["входи́ть / войти́", "eintreten, hineingehen"],
+        ["встава́ть / встать", "aufstehen"],
+        ["одева́ться / оде́ться", "sich anziehen"],
+        ["сади́ться / сесть", "sich setzen"],
+        ["чита́ть / прочита́ть", "lesen"],
+        ["пить / вы́пить", "trinken"],
+        ["есть / съесть", "essen"],
+        ["открыва́ть / откры́ть", "öffnen, aufmachen"],
+        ["закрыва́ть / закры́ть", "schließen, zumachen"],
+        ["дава́ть / дать", "geben"],
+        ["брать / взять", "nehmen"],
+        ["покупа́ть / купи́ть", "kaufen"],
+        ["забыва́ть / забы́ть", "vergessen"],
+        ["говори́ть / сказа́ть", "sagen, sprechen"],
+        ["помога́ть / помо́чь", "helfen"],
+        ["опа́здывать / опозда́ть", "sich verspäten"],
+        ["теря́ть / потеря́ть", "verlieren"],
+        ["мыть / вы́мыть", "waschen"],
+        ["включа́ть / включи́ть", "einschalten"],
+        ["повторя́ть / повтори́ть", "wiederholen"],
+        ["извиня́ть / ausвини́ть", "entschuldigen"],
+        ["приезжа́ть / прие́хать", "ankommen, hinfahren (mit Fahrzeug)"],
+        ["па́дать / упа́сть", "fallen, stürzen"],
+        ["молча́ть / замолча́ть", "schweigen, verstummen"],
+        ["ждать / подожда́ть", "warten"],
+        ["пожа́луйста", "bitte"],
+        ["ча́ще", "öfter"],
+        ["всегда́", "immer"],
+        ["ка́ждый день", "jeden Tag"],
+        ["пра́вда", "Wahrheit"],
+        ["окно́", "Fenster"],
+        ["дверь", "Tür"],
+        ["ключи́", "Schlüssel"],
+        ["ру́чка", "Kugelschreiber, Stift"],
+        ["тетра́дь", "Heft"],
+        ["сло́во", "Wort"],
+        ["слова́рь", "Wörterbuch"],
+        ["су́мка", "Tasche"],
+        ["уро́к", "Unterricht, Lektion"],
+        ["смотри́ / смотри́те", "pass auf / passen Sie auf (Warnung)"],
+        ["не", "nicht (Verbot)"]
+    ];
+
+    let cards = rawData.map(item => ({ front: item[0], back: item[1] }));
+    let currentIndex = 0;
+    let isFlipped = false;
+
+    // Elemente
+    const flashcard = document.getElementById('flashcard');
+    const frontText = document.getElementById('frontText');
+    const backText = document.getElementById('backText');
+    const progress = document.getElementById('progress');
+    const nextBtn = document.getElementById('nextBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const shuffleBtn = document.getElementById('shuffleBtn');
+    const homeBtn = document.getElementById('homeBtn');
+    const cardContainer = document.getElementById('cardContainer');
+
+    function updateCard() {
+        isFlipped = false;
+        flashcard.classList.remove('is-flipped');
+        
+        const currentCard = cards[currentIndex];
+        frontText.innerText = currentCard.front;
+        backText.innerText = currentCard.back;
+        
+        // Dynamische Schriftgröße
+        adjustFontSize(frontText, currentCard.front);
+        adjustFontSize(backText, currentCard.back);
+
+        progress.innerText = `${currentIndex + 1} / ${cards.length}`;
+    }
+
+    function adjustFontSize(element, text) {
+        if (text.length > 40) {
+            element.style.fontSize = "1.2rem";
+        } else if (text.length > 20) {
+            element.style.fontSize = "1.5rem";
+        } else {
+            element.style.fontSize = "1.8rem";
+        }
+    }
+
+    function flipCard() {
+        isFlipped = !isFlipped;
+        flashcard.classList.toggle('is-flipped');
+    }
+
+    function nextCard() {
+        if (currentIndex < cards.length - 1) {
+            currentIndex++;
+            updateCard();
+        }
+    }
+
+    function prevCard() {
+        if (currentIndex > 0) {
+            currentIndex--;
+            updateCard();
+        }
+    }
+
+    function shuffleCards() {
+        for (let i = cards.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [cards[i], cards[j]] = [cards[j], cards[i]];
+        }
+        currentIndex = 0;
+        updateCard();
+    }
+
+    function goToStart() {
+        currentIndex = 0;
+        updateCard();
+    }
+
+    // Event Listener
+    cardContainer.addEventListener('click', flipCard);
+    nextBtn.addEventListener('click', nextCard);
+    prevBtn.addEventListener('click', prevCard);
+    shuffleBtn.addEventListener('click', shuffleCards);
+    homeBtn.addEventListener('click', goToStart);
+
+    // Tastatursteuerung
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight') {
+            nextCard();
+        } else if (e.key === 'ArrowLeft') {
+            prevCard();
+        } else if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault(); // Verhindert Scrolling bei Leertaste
+            flipCard();
+        } else if (e.key === 'Home') {
+            goToStart();
+        }
+    });
+
+    // Initialisierung
+    updateCard();
+
+</script>
+
+</body>
+</html>
