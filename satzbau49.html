@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Sprachassistent: Satz-Baukasten</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --error: #e74c3c;
+            --bg: #f4f7f6;
+            --white: #ffffff;
+            --magnet-bg: #ecf0f1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-style: normal !important;
+            background-color: var(--bg);
+            color: var(--primary);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--white);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        h1 { text-align: center; border-bottom: 3px solid var(--secondary); padding-bottom: 10px; }
+        
+        .instruction {
+            background: #eef6fc;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+        }
+
+        .exercise-block {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 40px;
+        }
+
+        .task-header {
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--primary);
+        }
+
+        /* Satz-Baufläche */
+        .sentence-dropzone {
+            min-height: 50px;
+            border-bottom: 2px solid var(--secondary);
+            margin-bottom: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 10px;
+            background: #fdfdfd;
+            border-radius: 8px 8px 0 0;
+            transition: background-color 0.3s;
+        }
+
+        .sentence-dropzone.correct { background-color: #d4edda; border-color: var(--success); }
+        .sentence-dropzone.incorrect { background-color: #f8d7da; border-color: var(--error); }
+
+        /* Magnete */
+        .word-pool {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 10px;
+        }
+
+        .magnet {
+            background: var(--magnet-bg);
+            border: 1px solid #bdc3c7;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+            font-weight: 500;
+            font-style: normal !important;
+        }
+
+        .magnet:hover { background: #dce3e6; transform: translateY(-2px); }
+        .magnet.used { opacity: 0.3; cursor: default; pointer-events: none; }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .btn-reset { background-color: #95a5a6; }
+        .btn-solve { background-color: var(--secondary); }
+
+        @media (max-width: 600px) {
+            .main-container { padding: 15px; }
+            .magnet { padding: 6px 10px; font-size: 0.9rem; }
+        }
+
+        span, div, button { font-style: normal !important; }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <h1>Russisch: Satz-Baukasten 🏗️</h1>
+    
+    <div class="instruction">
+        <strong>Anleitung:</strong> Klicke auf die Wörter, um den russischen Satz zu bilden. <br>
+        Der Satz wird sofort überprüft, wenn er vollständig ist. Klicke auf ein Wort im oberen Feld, um es wieder zu entfernen.
+    </div>
+
+    <div id="exercises-root"></div>
+
+</div>
+
+<script>
+    const tasks = [
+        { emoji: "🙏", text: "Bitte um Verzeihung (NSV)", correct: ["Извините", "меня,", "пожалуйста!"], pool: ["пожалуйста!", "Извините", "меня,"] },
+        { emoji: "🔑", text: "Warnung vor Versehen (SV)", correct: ["Смотри", "не", "забудь", "ключи."], pool: ["забудь", "не", "ключи.", "Смоtri"] },
+        { emoji: "🚪", text: "Höfliche Einladung (NSV)", correct: ["Входите,", "пожалуйста,", "и", "садитесь."], pool: ["садитесь.", "Входите,", "и", "пожалуйста,"] },
+        { emoji: "📞", text: "Konkrete Bitte (SV)", correct: ["Позвони", "мне", "завтра", "утром."], pool: ["завтра", "Позвони", "утром.", "мне"] },
+        { emoji: "🚫", text: "Verbot (NSV)", correct: ["Не", "открывай", "это", "окно."], pool: ["окно.", "открывай", "Не", "это"] },
+        { emoji: "⚠️", text: "Warnung vor Sturz (SV)", correct: ["Смотри", "не", "упади", "здесь!"], pool: ["здесь!", "Смотри", "упади", "не"] },
+        { emoji: "📚", text: "Allgemeiner Ratschlag (NSV)", correct: ["Читай", "книги", "каждый", "день."], pool: ["день.", "книги", "Читай", "каждый"] },
+        { emoji: "👜", text: "Bitte um Hilfe (SV)", correct: ["Помоги", "мне", "с", "этой", "сумкой."], pool: ["сумкой.", "Помоги", "с", "мне", "этой"] },
+        { emoji: "💬", text: "Gewohnheit (NSV)", correct: ["Всегда", "говори", "только", "правду."], pool: ["только", "Всегда", "правду.", "говори"] },
+        { emoji: "🍞", text: "Verbot beim Einkaufen (NSV)", correct: ["Не", "покупай", "этот", "хлеб."], pool: ["хлеб.", "покупай", "Не", "этот"] },
+        { emoji: "🧂", text: "Bitte am Tisch (SV)", correct: ["Передай", "мне", "соль,", "пожалуйста."], pool: ["пожалуйста.", "соль,", "Передай", "мне"] },
+        { emoji: "🥛", text: "Erledigung (SV)", correct: ["Купи", "молоко", "и", "сыр."], pool: ["и", "молоко", "Купи", "сыр."] },
+        { emoji: "⌚", text: "Warnung vor Verspätung (SV)", correct: ["Смотри", "не", "опоздай", "сегодня."], pool: ["не", "сегодня.", "Смотри", "опоздай"] },
+        { emoji: "🏫", text: "Allgemeines Verbot (NSV)", correct: ["Не", "опаздывай", "на", "уроки."], pool: ["уроки.", "на", "опаздывай", "Не"] },
+        { emoji: "✍️", text: "Wunsch nach Wiederholung (NSV)", correct: ["Пиши", "мне", "чаще,", "пожалуйста."], pool: ["чаще,", "Пиши", "пожалуйста.", "мне"] },
+        { emoji: "🏠", text: "Aufforderung (SV)", correct: ["Открой", "дверь,", "это", "я."], pool: ["это", "я.", "дверь,", "Открой"] },
+        { emoji: "🥣", text: "Verbot (NSV)", correct: ["Не", "ешь", "холодный", "суп."], pool: ["суп.", "ешь", "холодный", "Не"] },
+        { emoji: "📍", text: "Einmalige Bitte (SV)", correct: ["Скажи", "мне", "свой", "адрес."], pool: ["адрес.", "мне", "свой", "Скажи"] },
+        { emoji: "🪑", text: "Einladung zum Setzen (NSV)", correct: ["Садись", "на", "этот", "стул."], pool: ["стул.", "Садись", "этот", "на"] },
+        { emoji: "🐕", text: "Strenges Kommando (Infinitiv)", correct: ["Сидеть", "и", "ждать", "тут!"], pool: ["ждать", "и", "тут!", "Сидеть"] }
+    ];
+
+    function shuffle(array) {
+        return array.sort(() => Math.random() - 0.5);
+    }
+
+    function renderTasks() {
+        const root = document.getElementById('exercises-root');
+        tasks.forEach((task, idx) => {
+            const block = document.createElement('div');
+            block.className = 'exercise-block';
+            block.id = `block-${idx}`;
+
+            block.innerHTML = `
+                <div class="task-header"><span>${task.emoji}</span> Aufgabe ${idx + 1}: ${task.text}</div>
+                <div class="sentence-dropzone" id="zone-${idx}"></div>
+                <div class="word-pool" id="pool-${idx}">
+                    ${shuffle([...task.pool]).map((word, wIdx) => `
+                        <span class="magnet" onclick="addToSentence(${idx}, '${word.replace(/'/g, "\\'")}', this)">${word}</span>
+                    `).join('')}
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-reset" onclick="resetTask(${idx})">Zurücksetzen</button>
+                    <button class="btn btn-solve" onclick="showSolution(${idx})">Lösung zeigen</button>
+                </div>
+            `;
+            root.appendChild(block);
+        });
+    }
+
+    function addToSentence(idx, word, element) {
+        const zone = document.getElementById(`zone-${idx}`);
+        if (element.classList.contains('used')) return;
+
+        const magnet = document.createElement('span');
+        magnet.className = 'magnet';
+        magnet.innerText = word;
+        magnet.onclick = function() {
+            zone.removeChild(magnet);
+            element.classList.remove('used');
+            checkSentence(idx);
+        };
+
+        zone.appendChild(magnet);
+        element.classList.add('used');
+        checkSentence(idx);
+    }
+
+    function checkSentence(idx) {
+        const zone = document.getElementById(`zone-${idx}`);
+        const currentWords = Array.from(zone.querySelectorAll('.magnet')).map(m => m.innerText);
+        const correctWords = tasks[idx].correct;
+
+        zone.classList.remove('correct', 'incorrect');
+
+        if (currentWords.length === correctWords.length) {
+            const isCorrect = currentWords.every((w, i) => w === correctWords[i]);
+            zone.classList.add(isCorrect ? 'correct' : 'incorrect');
+        }
+    }
+
+    function resetTask(idx) {
+        const zone = document.getElementById(`zone-${idx}`);
+        zone.innerHTML = "";
+        zone.classList.remove('correct', 'incorrect');
+        const pool = document.getElementById(`pool-${idx}`);
+        pool.querySelectorAll('.magnet').forEach(m => m.classList.remove('used'));
+    }
+
+    function showSolution(idx) {
+        resetTask(idx);
+        const zone = document.getElementById(`zone-${idx}`);
+        const pool = document.getElementById(`pool-${idx}`);
+        const correctWords = tasks[idx].correct;
+
+        correctWords.forEach(word => {
+            const magnet = document.createElement('span');
+            magnet.className = 'magnet';
+            magnet.innerText = word;
+            zone.appendChild(magnet);
+        });
+
+        pool.querySelectorAll('.magnet').forEach(m => m.classList.add('used'));
+        zone.classList.add('correct');
+    }
+
+    window.onload = renderTasks;
+</script>
+
+</body>
+</html>
