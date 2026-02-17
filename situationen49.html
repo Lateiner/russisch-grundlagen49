@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Lernportal: Der Imperativ (NSV/SV)</title>
+    <!-- Polyfill für Drag & Drop auf Touch-Geräten -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --error: #e74c3c;
+            --bg: #f0f2f5;
+            --white: #ffffff;
+            --text: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--white);
+            padding: 20px 40px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            margin: 20px 0;
+        }
+
+        h1, h2, h3 { color: var(--primary); border-bottom: 2px solid var(--secondary); padding-bottom: 8px; }
+
+        .intro {
+            background: #eef6fc;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 6px solid var(--secondary);
+            margin-bottom: 30px;
+        }
+
+        .exercise-card {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 40px;
+            transition: transform 0.2s;
+        }
+
+        .exercise-card:hover { border-color: var(--secondary); }
+
+        .task-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            margin: 8px 0;
+            background: #f9f9f9;
+            border-radius: 8px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .scenario { flex: 1; min-width: 250px; font-weight: 500; }
+
+        /* Form-Elemente */
+        select {
+            padding: 10px;
+            border-radius: 6px;
+            border: 2px solid #ccc;
+            font-size: 1rem;
+            min-width: 200px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        select.correct { border-color: var(--success); background-color: #d4edda; color: #155724; }
+        select.incorrect { border-color: var(--error); background-color: #f8d7da; color: #721c24; }
+
+        .btn-group { display: flex; gap: 10px; margin-top: 20px; }
+        
+        button {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+
+        .btn-res { background: #95a5a6; color: white; }
+        .btn-sol { background: var(--secondary); color: white; }
+        button:hover { opacity: 0.9; }
+
+        /* Matching Buttons Style */
+        .option-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+        .opt-btn { 
+            background: #fff; border: 2px solid var(--secondary); color: var(--secondary); 
+            padding: 6px 12px; border-radius: 20px; font-size: 0.9rem;
+        }
+        .opt-btn.correct { background: var(--success); color: white; border-color: var(--success); }
+        .opt-btn.incorrect { background: var(--error); color: white; border-color: var(--error); }
+
+        /* Drag & Drop */
+        .pool {
+            display: flex; flex-wrap: wrap; gap: 10px; padding: 15px;
+            background: #eee; border-radius: 8px; margin-bottom: 20px; min-height: 50px;
+        }
+        .drop-zones { display: flex; gap: 15px; margin-top: 10px; }
+        .zone { 
+            flex: 1; min-height: 120px; border: 2px dashed var(--secondary); 
+            border-radius: 8px; padding: 10px; background: #fafafa;
+        }
+        .zone h4 { text-align: center; margin-top: 0; color: var(--secondary); }
+        .item { 
+            background: var(--primary); color: white; padding: 6px 12px; 
+            border-radius: 4px; cursor: grab; display: inline-block; margin: 4px;
+        }
+        .item.correct { background: var(--success) !important; }
+        .item.incorrect { background: var(--error) !important; }
+
+        @media (max-width: 600px) {
+            .task-row { flex-direction: column; align-items: stretch; }
+            .drop-zones { flex-direction: column; }
+            .container { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russische Grammatik: Der Imperativ</h1>
+    
+    <div class="intro">
+        <h3>Gebrauch von NSV und SV</h3>
+        <p><strong>NSV (Unvollendet):</strong> Prozess, Wiederholung, Einladung, allgemeiner Ratschlag, Verbot (не + NSV).</p>
+        <p><strong>SV (Vollendet):</strong> Einmaliges Ergebnis, konkrete Bitte, Warnung vor Fehlern (смотри не + SV).</p>
+        <p><em>Tipp: Keine Tastatur nötig! Alle Aufgaben sind durch Auswahl oder Ziehen lösbar.</em></p>
+    </div>
+
+    <!-- TEIL 1: Situations-Zuordnung (Matching) (Aufgaben 1-5) -->
+    <div class="exercise-card" id="ex1">
+        <h2>Teil 1: Situations-Zuordnung (Matching)</h2>
+        <p>Welche Reaktion passt zur beschriebenen Situation?</p>
+
+        <div class="task-row" data-correct="Входите!">
+            <div class="scenario">1. Ein Gast steht an der Tür und klopft.</div>
+            <div class="option-btns">
+                <button class="opt-btn" onclick="checkMatch(this, 'Входите!')">Войдите!</button>
+                <button class="opt-btn" onclick="checkMatch(this, 'Входите!')">Входите!</button>
+            </div>
+        </div>
+
+        <div class="task-row" data-correct="Позвони мне.">
+            <div class="scenario">2. Du bittest jemanden, dich nach der Ankunft einmal kurz anzurufen.</div>
+            <div class="option-btns">
+                <button class="opt-btn" onclick="checkMatch(this, 'Позвони мне.')">Позвони мне.</button>
+                <button class="opt-btn" onclick="checkMatch(this, 'Позвони мне.')">Звони мне.</button>
+            </div>
+        </div>
+
+        <div class="task-row" data-correct="Не открывай окно.">
+            <div class="scenario">3. Du verbietest jemandem, das Fenster zu öffnen.</div>
+            <div class="option-btns">
+                <button class="opt-btn" onclick="checkMatch(this, 'Не открывай окно.')">Не открой окно.</button>
+                <button class="opt-btn" onclick="checkMatch(this, 'Не открывай окно.')">Не открывай окно.</button>
+            </div>
+        </div>
+
+        <div class="task-row" data-correct="Смотри не забудь!">
+            <div class="scenario">4. Du warnst jemanden, den Schlüssel nicht zu vergessen.</div>
+            <div class="option-btns">
+                <button class="opt-btn" onclick="checkMatch(this, 'Смотри не забудь!')">Смотри не забудь!</button>
+                <button class="opt-btn" onclick="checkMatch(this, 'Смотри ne забудь!')">Не забывай!</button>
+            </div>
+        </div>
+
+        <div class="task-row" data-correct="Пиши чаще.">
+            <div class="scenario">5. Du wünschst dir, dass jemand dir regelmäßig schreibt.</div>
+            <div class="option-btns">
+                <button class="opt-btn" onclick="checkMatch(this, 'Пиши чаще.')">Напиши чаще.</button>
+                <button class="opt-btn" onclick="checkMatch(this, 'Пиши чаще.')">Пиши чаще.</button>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-res" onclick="resetMatch('ex1')">Zurücksetzen</button>
+            <button class="btn-sol" onclick="solveMatch('ex1')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- TEIL 2: Lückentext (6-10) -->
+    <div class="exercise-card" id="ex2">
+        <h2>Teil 2: Den richtigen Aspekt wählen</h2>
+        
+        <div class="task-row">
+            <div class="scenario">6. „... , пожалуйста, садитесь!“ (Einladung)</div>
+            <select onchange="checkSel(this, 'Проходите')">
+                <option value="">-- wählen --</option>
+                <option value="Пройдите">Пройдите (SV)</option>
+                <option value="Проходите">Проходите (NSV)</option>
+            </select>
+        </div>
+
+        <div class="task-row">
+            <div class="scenario">7. „Не ... это слово, оно здесь не подходит.“ (Verbot)</div>
+            <select onchange="checkSel(this, 'пиши')">
+                <option value="">-- wählen --</option>
+                <option value="пиши">пиши (NSV)</option>
+                <option value="напиши">напиши (SV)</option>
+            </select>
+        </div>
+
+        <div class="task-row">
+            <div class="scenario">8. „... мне правду!“ (Fokus auf einmaliges Ergebnis)</div>
+            <select onchange="checkSel(this, 'Скажи')">
+                <option value="">-- wählen --</option>
+                <option value="Говори">Говори (NSV)</option>
+                <option value="Скажи">Скажи (SV)</option>
+            </select>
+        </div>
+
+        <div class="task-row">
+            <div class="scenario">9. „Смотри не ... ! Здесь скользко.“ (Warnung)</div>
+            <select onchange="checkSel(this, 'упади')">
+                <option value="">-- wählen --</option>
+                <option value="падай">падай (NSV)</option>
+                <option value="упади">упади (SV)</option>
+            </select>
+        </div>
+
+        <div class="task-row">
+            <div class="scenario">10. „Всегда ... руки перед едой.“ (Gewohnheit)</div>
+            <select onchange="checkSel(this, 'мой')">
+                <option value="">-- wählen --</option>
+                <option value="мой">мой (NSV)</option>
+                <option value="вымой">вымой (SV)</option>
+            </select>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-res" onclick="resetSel('ex2')">Zurücksetzen</button>
+            <button class="btn-sol" onclick="solveSel('ex2', ['Проходите', 'пиши', 'Скажи', 'упади', 'мой'])">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- TEIL 3: Kategorisierung (11-15) -->
+    <div class="exercise-card" id="ex3">
+        <h2>Teil 3: Drag & Drop (Grammatik-Check)</h2>
+        <p>Sortiere die Imperative nach ihrem Aspekt/Typ:</p>
+        
+        <div class="pool" id="pool3" ondrop="drop(event, '')" ondragover="allow(event)">
+            <div class="item" draggable="true" id="i11" ondragstart="drag(event)" data-ans="NSV">читай</div>
+            <div class="item" draggable="true" id="i12" ondragstart="drag(event)" data-ans="SV">прочитай</div>
+            <div class="item" draggable="true" id="i13" ondragstart="drag(event)" data-ans="INF">сидеть</div>
+            <div class="item" draggable="true" id="i14" ondragstart="drag(event)" data-ans="NSV">открывай</div>
+            <div class="item" draggable="true" id="i15" ondragstart="drag(event)" data-ans="INF">молчать</div>
+        </div>
+
+        <div class="drop-zones">
+            <div class="zone" id="z-NSV" ondrop="drop(event, 'NSV')" ondragover="allow(event)"><h4>NSV</h4></div>
+            <div class="zone" id="z-SV" ondrop="drop(event, 'SV')" ondragover="allow(event)"><h4>SV</h4></div>
+            <div class="zone" id="z-INF" ondrop="drop(event, 'INF')" ondragover="allow(event)"><h4>Kommando (Inf.)</h4></div>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-res" onclick="resetDrag('ex3')">Zurücksetzen</button>
+            <button class="btn-sol" onclick="solveDrag()">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- TEIL 4: Verständnis (16-20) -->
+    <div class="exercise-card" id="ex4">
+        <h2>Teil 4: Bedeutung im Kontext</h2>
+        
+        <div class="task-row">
+            <div class="scenario">16. „Не опоздай!“ — Warum wird hier der SV verwendet?</div>
+            <select onchange="checkSel(this, 'Warnung')">
+                <option value="">-- wählen --</option>
+                <option value="Verbot">Allgemeines Verbot</option>
+                <option value="Warnung">Warnung vor einem Versehen</option>
+            </select>
+        </div>
+
+        <div class="task-row">
+            <div class="scenario">17. „Берите печенье!“ — Warum wird hier der NSV verwendet?</div>
+            <select onchange="checkSel(this, 'Einladung')">
+                <option value="">-- wählen --</option>
+                <option value="Einladung">Einladung/Erlaubnis</option>
+                <option value="Befehl">Strenger Befehl</option>
+            </select>
+        </div>
+
+        <div class="task-row">
+            <div class="scenario">18. „Вымой посуду.“ — Welcher Fokus liegt hier vor?</div>
+            <select onchange="checkSel(this, 'Ergebnis')">
+                <option value="">-- wählen --</option>
+                <option value="Prozess">Der Prozess des Waschens</option>
+                <option value="Ergebnis">Das konkrete Ergebnis (Sauberkeit)</option>
+            </select>
+        </div>
+
+        <div class="task-row">
+            <div class="scenario">19. „Не кури здесь!“ — Warum NSV?</div>
+            <select onchange="checkSel(this, 'Verbot')">
+                <option value="">-- wählen --</option>
+                <option value="Verbot">Es ist ein Verbot</option>
+                <option value="Warnung">Es ist eine Warnung</option>
+            </select>
+        </div>
+
+        <div class="task-row">
+            <div class="scenario">20. „Стоять!“ — An wen richtet sich das meist?</div>
+            <select onchange="checkSel(this, 'Hund')">
+                <option value="">-- wählen --</option>
+                <option value="Freund">An einen guten Freund</option>
+                <option value="Hund">An einen Hund oder im Militär</option>
+            </select>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-res" onclick="resetSel('ex4')">Zurücksetzen</button>
+            <button class="btn-sol" onclick="solveSel('ex4', ['Warnung', 'Einladung', 'Ergebnis', 'Verbot', 'Hund'])">Lösung anzeigen</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    /* LOGIK TEIL 1 (Matching) */
+    function checkMatch(btn, correctVal) {
+        const row = btn.closest('.task-row');
+        const btns = row.querySelectorAll('.opt-btn');
+        btns.forEach(b => b.classList.remove('correct', 'incorrect'));
+        
+        if (btn.innerText === correctVal) {
+            btn.classList.add('correct');
+        } else {
+            btn.classList.add('incorrect');
+        }
+    }
+    function resetMatch(id) {
+        document.querySelectorAll(`#${id} .opt-btn`).forEach(b => b.classList.remove('correct', 'incorrect'));
+    }
+    function solveMatch(id) {
+        document.querySelectorAll(`#${id} .task-row`).forEach(row => {
+            const correct = row.getAttribute('data-correct');
+            row.querySelectorAll('.opt-btn').forEach(b => {
+                b.classList.remove('incorrect');
+                if (b.innerText === correct) b.classList.add('correct');
+            });
+        });
+    }
+
+    /* LOGIK TEIL 2 & 4 (Dropdowns) */
+    function checkSel(el, correct) {
+        el.classList.remove('correct', 'incorrect');
+        if (el.value === "") return;
+        el.classList.add(el.value === correct ? 'correct' : 'incorrect');
+    }
+    function resetSel(id) {
+        document.querySelectorAll(`#${id} select`).forEach(s => {
+            s.value = "";
+            s.classList.remove('correct', 'incorrect');
+        });
+    }
+    function solveSel(id, solArr) {
+        document.querySelectorAll(`#${id} select`).forEach((s, i) => {
+            s.value = solArr[i];
+            s.classList.add('correct');
+            s.classList.remove('incorrect');
+        });
+    }
+
+    /* LOGIK TEIL 3 (Drag & Drop) */
+    function allow(ev) { ev.preventDefault(); }
+    function drag(ev) { ev.dataTransfer.setData("text", ev.target.id); }
+    function drop(ev, zoneType) {
+        ev.preventDefault();
+        const data = ev.dataTransfer.getData("text");
+        const item = document.getElementById(data);
+        const targetZone = ev.target.closest('.zone') || document.getElementById('pool3');
+        targetZone.appendChild(item);
+        
+        item.classList.remove('correct', 'incorrect');
+        if (zoneType !== "") {
+            item.classList.add(item.getAttribute('data-ans') === zoneType ? 'correct' : 'incorrect');
+        }
+    }
+    function resetDrag(id) {
+        const pool = document.getElementById('pool3');
+        document.querySelectorAll('.item').forEach(i => {
+            i.classList.remove('correct', 'incorrect');
+            pool.appendChild(i);
+        });
+    }
+    function solveDrag() {
+        document.querySelectorAll('.item').forEach(i => {
+            const ans = i.getAttribute('data-ans');
+            document.getElementById('z-' + ans).appendChild(i);
+            i.classList.add('correct');
+            i.classList.remove('incorrect');
+        });
+    }
+</script>
+
+</body>
+</html>
