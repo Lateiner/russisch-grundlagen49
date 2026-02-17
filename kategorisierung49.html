@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Sprachassistent: Imperativ-Kategorisierung</title>
+    <!-- Polyfill für Drag & Drop auf Touch-Geräten -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --error: #e74c3c;
+            --bg: #f4f7f6;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--primary);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--white);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: var(--primary);
+            border-bottom: 3px solid var(--secondary);
+            padding-bottom: 10px;
+        }
+
+        .intro-box {
+            background: #eef6fc;
+            padding: 20px;
+            border-left: 5px solid var(--secondary);
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        /* Drag & Drop Area */
+        .pool-label {
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
+            color: var(--secondary);
+        }
+
+        .pool {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 20px;
+            background: #f9f9f9;
+            border: 2px solid #eee;
+            border-radius: 10px;
+            min-height: 100px;
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+
+        .drop-zones {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .zone {
+            background: #fff;
+            border: 2px dashed var(--secondary);
+            border-radius: 10px;
+            padding: 15px;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            transition: background 0.3s;
+        }
+
+        .zone h3 {
+            margin-top: 0;
+            font-size: 1.1rem;
+            text-align: center;
+            color: var(--primary);
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        .item {
+            background: var(--primary);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: grab;
+            user-select: none;
+            text-align: center;
+            font-weight: 500;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.2s, background 0.3s;
+        }
+
+        .item:active { cursor: grabbing; transform: scale(0.95); }
+
+        /* Feedback Colors */
+        .item.correct { background-color: var(--success) !important; box-shadow: 0 0 10px var(--success); }
+        .item.incorrect { background-color: var(--error) !important; box-shadow: 0 0 10px var(--error); }
+
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            font-size: 1rem;
+            transition: opacity 0.2s;
+        }
+
+        .btn-reset { background-color: #7f8c8d; }
+        .btn-sol { background-color: var(--secondary); }
+        .btn:hover { opacity: 0.8; }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .drop-zones { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russische Grammatik</h1>
+    <h2>Der Imperativ: NSV vs. SV</h2>
+
+    <div class="intro-box">
+        <p><strong>Anleitung:</strong> Ziehe die russischen Imperativ-Formen in die richtige Kategorie. Die Auswertung erfolgt sofort beim Ablegen (Grün = Richtig, Rot = Falsch).</p>
+        <ul>
+            <li><strong>Verbot / Prozess (NSV):</strong> Handlungen, die nicht getan werden sollen oder die Einladungen/Dauer ausdrücken.</li>
+            <li><strong>Warnung / Ergebnis (SV):</strong> Warnung vor einem Versehen („Pass auf, dass nicht...“) oder Fokus auf ein einmaliges Resultat.</li>
+            <li><strong>Kommando (Infinitiv):</strong> Sehr strenge Befehle (oft für Tiere oder beim Militär).</li>
+        </ul>
+    </div>
+
+    <span class="pool-label">Aufgaben-Pool (20 Imperative):</span>
+    <div class="pool" id="item-pool" ondrop="drop(event, 'pool')" ondragover="allowDrop(event)">
+        <!-- 20 Items -->
+        <div class="item" draggable="true" id="i1" data-cat="nsv" ondragstart="drag(event)">Не забывай!</div>
+        <div class="item" draggable="true" id="i2" data-cat="sv" ondragstart="drag(event)">Не забудь!</div>
+        <div class="item" draggable="true" id="i3" data-cat="nsv" ondragstart="drag(event)">Не опаздывай!</div>
+        <div class="item" draggable="true" id="i4" data-cat="sv" ondragstart="drag(event)">Не опоздай!</div>
+        <div class="item" draggable="true" id="i5" data-cat="nsv" ondragstart="drag(event)">Входите!</div>
+        <div class="item" draggable="true" id="i6" data-cat="sv" ondragstart="drag(event)">Войдите!</div>
+        <div class="item" draggable="true" id="i7" data-cat="nsv" ondragstart="drag(event)">Звони чаще!</div>
+        <div class="item" draggable="true" id="i8" data-cat="sv" ondragstart="drag(event)">Позвони завтра!</div>
+        <div class="item" draggable="true" id="i9" data-cat="nsv" ondragstart="drag(event)">Не открывай!</div>
+        <div class="item" draggable="true" id="i10" data-cat="sv" ondragstart="drag(event)">Не открой!</div>
+        <div class="item" draggable="true" id="i11" data-cat="inf" ondragstart="drag(event)">Стоять!</div>
+        <div class="item" draggable="true" id="i12" data-cat="inf" ondragstart="drag(event)">Сидеть!</div>
+        <div class="item" draggable="true" id="i13" data-cat="nsv" ondragstart="drag(event)">Садитесь!</div>
+        <div class="item" draggable="true" id="i14" data-cat="sv" ondragstart="drag(event)">Сядьте!</div>
+        <div class="item" draggable="true" id="i15" data-cat="nsv" ondragstart="drag(event)">Читай!</div>
+        <div class="item" draggable="true" id="i16" data-cat="sv" ondragstart="drag(event)">Прочитай!</div>
+        <div class="item" draggable="true" id="i17" data-cat="inf" ondragstart="drag(event)">Молчать!</div>
+        <div class="item" draggable="true" id="i18" data-cat="inf" ondragstart="drag(event)">Лежать!</div>
+        <div class="item" draggable="true" id="i19" data-cat="nsv" ondragstart="drag(event)">Покупай!</div>
+        <div class="item" draggable="true" id="i20" data-cat="sv" ondragstart="drag(event)">Купи!</div>
+    </div>
+
+    <div class="drop-zones">
+        <div class="zone" id="zone-nsv" data-cat="nsv" ondrop="drop(event, 'nsv')" ondragover="allowDrop(event)">
+            <h3>Verbot / Prozess (NSV)</h3>
+        </div>
+        <div class="zone" id="zone-sv" data-cat="sv" ondrop="drop(event, 'sv')" ondragover="allowDrop(event)">
+            <h3>Warnung / Ergebnis (SV)</h3>
+        </div>
+        <div class="zone" id="zone-inf" data-cat="inf" ondrop="drop(event, 'inf')" ondragover="allowDrop(event)">
+            <h3>Kommando (Infinitiv)</h3>
+        </div>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn btn-reset" onclick="resetAll()">Zurücksetzen</button>
+        <button class="btn btn-sol" onclick="showSolution()">Lösung anzeigen</button>
+    </div>
+</div>
+
+<script>
+    function allowDrop(ev) {
+        ev.preventDefault();
+    }
+
+    function drag(ev) {
+        ev.dataTransfer.setData("text", ev.target.id);
+    }
+
+    function drop(ev, zoneCat) {
+        ev.preventDefault();
+        const data = ev.dataTransfer.getData("text");
+        const item = document.getElementById(data);
+        const target = ev.target.closest('.zone') || document.getElementById('item-pool');
+
+        target.appendChild(item);
+
+        // Feedback
+        if (target.id === 'item-pool') {
+            item.classList.remove('correct', 'incorrect');
+        } else {
+            if (item.getAttribute('data-cat') === zoneCat) {
+                item.classList.add('correct');
+                item.classList.remove('incorrect');
+            } else {
+                item.classList.add('incorrect');
+                item.classList.remove('correct');
+            }
+        }
+    }
+
+    function showSolution() {
+        const items = document.querySelectorAll('.item');
+        items.forEach(item => {
+            const cat = item.getAttribute('data-cat');
+            const targetZone = document.getElementById('zone-' + cat);
+            targetZone.appendChild(item);
+            item.classList.add('correct');
+            item.classList.remove('incorrect');
+        });
+    }
+
+    function resetAll() {
+        const pool = document.getElementById('item-pool');
+        const items = document.querySelectorAll('.item');
+        items.forEach(item => {
+            pool.appendChild(item);
+            item.classList.remove('correct', 'incorrect');
+        });
+    }
+</script>
+
+</body>
+</html>
