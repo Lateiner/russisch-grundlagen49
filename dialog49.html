@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Sprachassistent: Imperativ-Training</title>
+    <!-- Polyfill für Drag & Drop (falls benötigt) -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --error: #e74c3c;
+            --bg: #fdfdfd;
+            --white: #ffffff;
+            --bubble-a: #f1f2f6;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-style: normal !important; /* Verhindert Kursivschrift */
+            background-color: #f0f2f5;
+            color: var(--primary);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--white);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+        }
+
+        h1 { text-align: center; color: var(--primary); font-size: 1.8rem; border-bottom: 3px solid var(--secondary); padding-bottom: 10px; }
+        
+        .rules {
+            background: #eef7ff;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        /* Dialog-Karten */
+        .dialog-card {
+            background: #fff;
+            border: 1px solid #eaeaea;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            transition: border-color 0.3s;
+        }
+
+        .dialog-card:hover { border-color: var(--secondary); }
+
+        .chat-row-a {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            max-width: 85%;
+        }
+
+        .avatar { font-size: 2rem; }
+
+        .bubble-a {
+            background: var(--bubble-a);
+            padding: 12px 18px;
+            border-radius: 18px 18px 18px 0;
+            font-size: 1.1rem;
+            font-style: normal !important;
+        }
+
+        .options-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 10px;
+        }
+
+        .choice-btn {
+            padding: 10px 22px;
+            border: 2px solid var(--secondary);
+            background: white;
+            color: var(--primary);
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.2s;
+            font-style: normal !important;
+        }
+
+        .choice-btn:hover { background: #f0f8ff; }
+
+        /* Status-Farben */
+        .choice-btn.correct {
+            background-color: var(--success) !important;
+            border-color: var(--success) !important;
+            color: white !important;
+        }
+
+        .choice-btn.incorrect {
+            background-color: var(--error) !important;
+            border-color: var(--error) !important;
+            color: white !important;
+        }
+
+        /* Buttons unten */
+        .controls {
+            position: sticky;
+            bottom: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 40px;
+            background: rgba(255,255,255,0.9);
+            padding: 15px;
+            border-radius: 12px;
+        }
+
+        .action-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            font-size: 1rem;
+        }
+
+        .btn-reset { background-color: #636e72; }
+        .btn-solve { background-color: var(--secondary); }
+        .action-btn:hover { opacity: 0.9; }
+
+        @media (max-width: 600px) {
+            .main-container { padding: 15px; }
+            .chat-row-a { max-width: 100%; }
+            .choice-btn { width: 100%; text-align: center; }
+        }
+
+        /* Kyrillische Schrift explizit vor Kursiv schützen */
+        span, button, div { font-style: normal !important; }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <h1>Russisch-Sprachassistent 🤖</h1>
+    
+    <div class="rules">
+        <strong>Kurzanleitung:</strong><br>
+        • <b>NSV</b> (Unvollendet): Einladungen 🚪, Prozesse ⏳, Verbote 🚫.<br>
+        • <b>SV</b> (Vollendet): Einmaliges Ergebnis ✅, Warnungen ⚠️.<br>
+        • Wähle die richtige Antwort im Dialog aus!
+    </div>
+
+    <div id="exercise-list">
+        <!-- Dialoge werden hier eingefügt -->
+    </div>
+
+    <div class="controls">
+        <button class="action-btn btn-reset" onclick="resetAll()">🔄 Zurücksetzen</button>
+        <button class="action-btn btn-solve" onclick="solveAll()">💡 Alle Lösungen</button>
+    </div>
+</div>
+
+<script>
+    const exercises = [
+        { emoji: "🚪", q: "Можно войти?", a: ["Входите!", "Войдите!"], correct: 0 },
+        { emoji: "📞", q: "Я поеду в Москву.", a: ["Звони мне!", "Позвони мне, когда приeдешь!"], correct: 1 },
+        { emoji: "🪟", q: "В комнате холодно.", a: ["Не открывай окно!", "Не открой окно!"], correct: 0 },
+        { emoji: "🖊️", q: "Мне нужна ручка.", a: ["Возьми, это моя.", "Бери, мне всё равно."], correct: 0 },
+        { emoji: "⚠️", q: "Там очень скользко!", a: ["Не падай!", "Смотри не упади!"], correct: 1 },
+        { emoji: "🍪", q: "Какое вкусное печенье!", a: ["Берите ещё!", "Возьмите ещё!"], correct: 0 },
+        { emoji: "🔑", q: "Я ухожу в магазин.", a: ["Не забывай ключи!", "Смотри не забудь ключи!"], correct: 1 },
+        { emoji: "📖", q: "Я хочу знать русский.", a: ["Читай книги каждый день.", "Прочитай эту книгу."], correct: 0 },
+        { emoji: "🆘", q: "Сумка очень тяжёлая!", a: ["Помогай!", "Помоги мне!"], correct: 1 },
+        { emoji: "🪑", q: "Куда мне сесть?", a: ["Садитесь здесь.", "Сядьте здесь."], correct: 0 },
+        { emoji: "✉️", q: "Я жду новостей.", a: ["Пиши мне чаще!", "Напиши мне один раз!"], correct: 0 },
+        { emoji: "🎁", q: "Это подарок для тебя.", a: ["Открывай!", "Открой!"], correct: 1 },
+        { emoji: "🚫", q: "Тут нельзя курить.", a: ["Не кури!", "Не покури!"], correct: 0 },
+        { emoji: "🦷", q: "Уже поздно.", a: ["Чисти зубы и спи.", "Почисти зубы."], correct: 0 },
+        { emoji: "🚌", q: "Автобус скоро приедет.", a: ["Не опаздывай!", "Смотри не опоздай!"], correct: 1 },
+        { emoji: "🍳", q: "Я голоден.", a: ["Ешь суп.", "Съешь суп."], correct: 1 },
+        { emoji: "📸", q: "Красивый вид!", a: ["Фотографируй!", "Сфотографируй меня!"], correct: 1 },
+        { emoji: "🐕", q: "Собака, ко мне!", a: ["Сиди!", "Сидеть!"], correct: 1 },
+        { emoji: "🧥", q: "На улице мороз.", a: ["Одевайся теплее.", "Оденься теплее."], correct: 1 },
+        { emoji: "❓", q: "Я не понимаю слово.", a: ["Спрашивай учителя.", "Спроси учителя."], correct: 1 }
+    ];
+
+    function buildExercises() {
+        const list = document.getElementById('exercise-list');
+        exercises.forEach((ex, idx) => {
+            const card = document.createElement('div');
+            card.className = 'dialog-card';
+            card.id = 'ex-' + idx;
+
+            card.innerHTML = `
+                <div class="chat-row-a">
+                    <div class="avatar">${ex.emoji}</div>
+                    <div class="bubble-a"><b>A:</b> ${ex.q}</div>
+                </div>
+                <div class="options-container">
+                    <button class="choice-btn" onclick="checkAnswer(${idx}, 0)">${ex.a[0]}</button>
+                    <button class="choice-btn" onclick="checkAnswer(${idx}, 1)">${ex.a[1]}</button>
+                </div>
+            `;
+            list.appendChild(card);
+        });
+    }
+
+    function checkAnswer(exIdx, choiceIdx) {
+        const card = document.getElementById('ex-' + exIdx);
+        const btns = card.querySelectorAll('.choice-btn');
+        const correctIdx = exercises[exIdx].correct;
+
+        // Reset
+        btns.forEach(b => b.classList.remove('correct', 'incorrect'));
+
+        if (choiceIdx === correctIdx) {
+            btns[choiceIdx].classList.add('correct');
+        } else {
+            btns[choiceIdx].classList.add('incorrect');
+            btns[correctIdx].classList.add('correct');
+        }
+    }
+
+    function solveAll() {
+        exercises.forEach((ex, idx) => {
+            const btns = document.querySelectorAll(`#ex-${idx} .choice-btn`);
+            btns.forEach(b => b.classList.remove('incorrect', 'correct'));
+            btns[ex.correct].classList.add('correct');
+        });
+    }
+
+    function resetAll() {
+        const btns = document.querySelectorAll('.choice-btn');
+        btns.forEach(b => b.classList.remove('correct', 'incorrect'));
+    }
+
+    // Initialisierung
+    window.onload = buildExercises;
+</script>
+
+</body>
+</html>
