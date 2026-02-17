@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Sprachassistent: Imperativ-Transformation</title>
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --error: #e74c3c;
+            --bg: #f4f7f9;
+            --white: #ffffff;
+            --nsv-color: #8e44ad;
+            --sv-color: #d35400;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-style: normal !important;
+            background-color: var(--bg);
+            color: var(--primary);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--white);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        h1 { text-align: center; color: var(--primary); margin-bottom: 5px; }
+        .subtitle { text-align: center; color: var(--secondary); margin-bottom: 25px; font-weight: bold; }
+
+        .explanation {
+            background: #fff9db;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 5px solid #f1c40f;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+        }
+
+        .task-card {
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            transition: box-shadow 0.3s;
+        }
+
+        .task-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+
+        .nsv-side {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1rem;
+        }
+
+        .nsv-label {
+            color: var(--nsv-color);
+            font-weight: bold;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            border: 1px solid var(--nsv-color);
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+
+        .arrow { font-size: 1.5rem; color: #ccc; }
+
+        .sv-options {
+            flex: 1;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .opt-btn {
+            padding: 8px 15px;
+            border: 2px solid var(--secondary);
+            background: white;
+            color: var(--primary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.2s;
+            min-width: 110px;
+            font-style: normal !important;
+        }
+
+        .opt-btn:hover { background: var(--secondary); color: white; }
+
+        /* Status-Styles */
+        .opt-btn.correct { background-color: var(--success) !important; border-color: var(--success) !important; color: white !important; }
+        .opt-btn.incorrect { background-color: var(--error) !important; border-color: var(--error) !important; color: white !important; }
+
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            border-top: 2px solid #eee;
+            padding-top: 20px;
+        }
+
+        .action-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            font-size: 1rem;
+        }
+
+        .btn-reset { background-color: #95a5a6; }
+        .btn-solve { background-color: var(--secondary); }
+
+        @media (max-width: 600px) {
+            .task-card { flex-direction: column; text-align: center; }
+            .nsv-side { justify-content: center; }
+            .sv-options { justify-content: center; width: 100%; }
+            .opt-btn { flex: 1; }
+        }
+
+        /* Kyrillische Schrift explizit vor Kursiv schützen */
+        span, button, div, h1, h2 { font-style: normal !important; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Aspekt-Umschalter 🔄</h1>
+    <div class="subtitle">Vom Prozess (NSV) zum Ergebnis (SV)</div>
+
+    <div class="explanation">
+        <strong>Konzept:</strong> Links siehst du den Imperativ im <b>NSV</b> (Vorgang/Einladung). <br>
+        Wähle rechts die passende Form im <b>SV</b> aus, wenn es um ein <b>einmaliges Ergebnis</b> geht.
+    </div>
+
+    <div id="tasks-container">
+        <!-- 20 Aufgaben werden hier generiert -->
+    </div>
+
+    <div class="controls">
+        <button class="action-btn btn-reset" onclick="resetAll()">🔄 Zurücksetzen</button>
+        <button class="action-btn btn-solve" onclick="solveAll()">💡 Alle Lösungen</button>
+    </div>
+</div>
+
+<script>
+    const transformations = [
+        { emoji: "👋", nsv: "Давай", sv_opts: ["Дай", "Давайка"], correct: 0, text: "Geben" },
+        { emoji: "🚪", nsv: "Входи", sv_opts: ["Заходи", "Войди"], correct: 1, text: "Eintreten" },
+        { emoji: "🪑", nsv: "Садись", sv_opts: ["Сядь", "Посиди"], correct: 0, text: "Sich setzen" },
+        { emoji: "📞", nsv: "Звони", sv_opts: ["Позвони", "Призвони"], correct: 0, text: "Anrufen" },
+        { emoji: "✍️", nsv: "Пиши", sv_opts: ["Запиши", "Напиши"], correct: 1, text: "Schreiben" },
+        { emoji: "📖", nsv: "Читай", sv_opts: ["Прочитай", "Дочитай"], correct: 0, text: "Lesen" },
+        { emoji: "🛒", nsv: "Покупай", sv_opts: ["Закупи", "Купи"], correct: 1, text: "Kaufen" },
+        { emoji: "📢", nsv: "Повторяй", sv_opts: ["Повтори", "Отвтори"], correct: 0, text: "Wiederholen" },
+        { emoji: "👀", nsv: "Показывай", sv_opts: ["Укажи", "Покажи"], correct: 1, text: "Zeigen" },
+        { emoji: "🔓", nsv: "Открывай", sv_opts: ["Открой", "Прикрой"], correct: 0, text: "Öffnen" },
+        { emoji: "🧠", nsv: "Забывай", sv_opts: ["Забудь", "Отбудь"], correct: 0, text: "Vergessen" },
+        { emoji: "🤲", nsv: "Бери", sv_opts: ["Возьми", "Забери"], correct: 0, text: "Nehmen" },
+        { emoji: "🤝", nsv: "Помогай", sv_opts: ["Помоги", "Вымоги"], correct: 0, text: "Helfen" },
+        { emoji: "💬", nsv: "Говори", sv_opts: ["Скажи", "Поговори"], correct: 0, text: "Sagen" },
+        { emoji: "🧼", nsv: "Мой", sv_opts: ["Омой", "Вымой"], correct: 1, text: "Waschen" },
+        { emoji: "⏰", nsv: "Опаздывай", sv_opts: ["Опоздай", "Запоздай"], correct: 0, text: "Verspäten" },
+        { emoji: "🥣", nsv: "Ешь", sv_opts: ["Поешь", "Съешь"], correct: 1, text: "Essen" },
+        { emoji: "🙏", nsv: "Проси", sv_opts: ["Попроси", "Опроси"], correct: 0, text: "Bitten" },
+        { emoji: "📸", nsv: "Фотографируй", sv_opts: ["Сфотографируй", "Зафотографируй"], correct: 0, text: "Fotografieren" },
+        { emoji: "💡", nsv: "Включай", sv_opts: ["Включи", "Подключи"], correct: 0, text: "Einschalten" }
+    ];
+
+    function initTasks() {
+        const container = document.getElementById('tasks-container');
+        transformations.forEach((item, idx) => {
+            const card = document.createElement('div');
+            card.className = 'task-card';
+            card.id = `task-${idx}`;
+            
+            card.innerHTML = `
+                <div class="nsv-side">
+                    <span>${item.emoji}</span>
+                    <div class="nsv-label">NSV</div>
+                    <span><b>${item.nsv}!</b></span>
+                    <span style="font-size: 0.8rem; color: #999;">(${item.text})</span>
+                </div>
+                <div class="arrow">→</div>
+                <div class="sv-options">
+                    <button class="opt-btn" onclick="checkTransform(${idx}, 0)">${item.sv_opts[0]}</button>
+                    <button class="opt-btn" onclick="checkTransform(${idx}, 1)">${item.sv_opts[1]}</button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function checkTransform(taskIdx, choiceIdx) {
+        const card = document.getElementById(`task-${taskIdx}`);
+        const btns = card.querySelectorAll('.opt-btn');
+        const correctIdx = transformations[taskIdx].correct;
+
+        btns.forEach(b => b.classList.remove('correct', 'incorrect'));
+
+        if (choiceIdx === correctIdx) {
+            btns[choiceIdx].classList.add('correct');
+        } else {
+            btns[choiceIdx].classList.add('incorrect');
+            btns[correctIdx].classList.add('correct'); // Zeige das richtige Feld ebenfalls grün
+        }
+    }
+
+    function solveAll() {
+        transformations.forEach((item, idx) => {
+            const btns = document.querySelectorAll(`#task-${idx} .opt-btn`);
+            btns.forEach(b => b.classList.remove('correct', 'incorrect'));
+            btns[item.correct].classList.add('correct');
+        });
+    }
+
+    function resetAll() {
+        document.querySelectorAll('.opt-btn').forEach(b => {
+            b.classList.remove('correct', 'incorrect');
+        });
+    }
+
+    window.onload = initTasks;
+</script>
+
+</body>
+</html>
