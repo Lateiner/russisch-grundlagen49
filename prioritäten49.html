@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Sprachassistent: Imperativ-Ranking</title>
+    <!-- Polyfill für Drag & Drop auf Touch-Geräten -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --error: #e74c3c;
+            --bg: #f4f7f6;
+            --white: #ffffff;
+            --slot-bg: #ecf0f1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--primary);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--white);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        h1 { text-align: center; border-bottom: 3px solid var(--secondary); padding-bottom: 10px; font-style: normal; }
+        
+        .intro-box {
+            background: #eef6fc;
+            padding: 20px;
+            border-left: 5px solid var(--secondary);
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .exercise-block {
+            margin-bottom: 50px;
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 15px;
+            background: #fafafa;
+        }
+
+        .exercise-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: block;
+            font-size: 1.1rem;
+            color: var(--secondary);
+        }
+
+        /* Drag Items Pool */
+        .item-pool {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 15px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            min-height: 50px;
+            justify-content: center;
+        }
+
+        .draggable {
+            background: var(--primary);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: grab;
+            user-select: none;
+            font-weight: 500;
+            font-style: normal !important;
+            text-align: center;
+        }
+
+        .draggable.correct-placed { background-color: var(--success) !important; }
+        .draggable.incorrect-placed { background-color: var(--error) !important; }
+
+        /* Ranking Slots */
+        .ranking-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .slot-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .drop-slot {
+            width: 100%;
+            height: 60px;
+            background: var(--slot-bg);
+            border: 2px dashed #bdc3c7;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+
+        .slot-label {
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-align: center;
+            color: #7f8c8d;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            transition: opacity 0.2s;
+        }
+
+        .btn-reset { background-color: #95a5a6; }
+        .btn-solve { background-color: var(--secondary); }
+
+        @media (max-width: 600px) {
+            .ranking-grid { grid-template-columns: 1fr; }
+            .drop-slot { height: 50px; }
+            .main-container { padding: 15px; }
+        }
+
+        /* Kyrillische Schrift explizit schützen */
+        span, div, b, button, h1, h2 { font-style: normal !important; }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <h1>Imperativ-Ranking ⚖️</h1>
+    
+    <div class="intro-box">
+        <strong>Anleitung:</strong> Sortiere die Imperative nach ihrer „Härte“. <br>
+        Ziehe die Wörter in die Boxen: <br>
+        <b>1</b> = Härtestes Kommando 😡 | <b>4</b> = Höflichste Bitte 😊 <br>
+        <i>Feedback erfolgt sofort beim Ablegen!</i>
+    </div>
+
+    <!-- Aufgabe 1: Sitzen -->
+    <div class="exercise-block" id="ex-1">
+        <span class="exercise-title">Gruppe 1: Das Verb „Sitzen“</span>
+        <div class="item-pool" id="pool-1" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <div class="draggable" draggable="true" id="e1-v1" ondragstart="drag(event)" data-rank="1">Сидеть!</div>
+            <div class="draggable" draggable="true" id="e1-v2" ondragstart="drag(event)" data-rank="2">Сядь!</div>
+            <div class="draggable" draggable="true" id="e1-v3" ondragstart="drag(event)" data-rank="3">Садись!</div>
+            <div class="draggable" draggable="true" id="e1-v4" ondragstart="drag(event)" data-rank="4">Садись, пожалуйста</div>
+        </div>
+        <div class="ranking-grid">
+            <div class="slot-container"><div class="slot-label">1 (Hart) 😡</div><div class="drop-slot" data-rank="1" ondrop="drop(event)" ondragover="allowDrop(event)"></div></div>
+            <div class="slot-container"><div class="slot-label">2 (Stark) 😠</div><div class="drop-slot" data-rank="2" ondrop="drop(event)" ondragover="allowDrop(event)"></div></div>
+            <div class="slot-container"><div class="slot-label">3 (Neutral) 🙂</div><div class="drop-slot" data-rank="3" ondrop="drop(event)" ondragover="allowDrop(event)"></div></div>
+            <div class="slot-container"><div class="slot-label">4 (Höflich) 😊</div><div class="drop-slot" data-rank="4" ondrop="drop(event)" ondragover="allowDrop(event)"></div></div>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-reset" onclick="resetTask(1)">Zurücksetzen</button>
+            <button class="btn btn-solve" onclick="solveTask(1)">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Aufgabe 2: Schweigen -->
+    <div class="exercise-block" id="ex-2">
+        <span class="exercise-title">Gruppe 2: Das Verb „Schweigen“</span>
+        <div class="item-pool" id="pool-2" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <div class="draggable" draggable="true" id="e2-v1" ondragstart="drag(event)" data-rank="1">Молчать!</div>
+            <div class="draggable" draggable="true" id="e2-v2" ondragstart="drag(event)" data-rank="2">Замолчи!</div>
+            <div class="draggable" draggable="true" id="e2-v3" ondragstart="drag(event)" data-rank="3">Помолчи!</div>
+            <div class="draggable" draggable="true" id="e2-v4" ondragstart="drag(event)" data-rank="4">Помолчи, пожалуйста</div>
+        </div>
+        <div class="ranking-grid">
+            <div class="slot-container"><div class="slot-label">1 (Hart) 😡</div><div class="drop-slot" data-rank="1" ondrop="drop(event)" ondragover="allowDrop(event)"></div></div>
+            <div class="slot-container"><div class="slot-label">2 (Stark) 😠</div><div class="drop-slot" data-rank="2" ondrop="drop(event)" ondragover="allowDrop(event)"></div></div>
+            <div class="slot-container"><div class="slot-label">3 (Neutral) 🙂</div><div class="drop-slot" data-rank="3" ondrop="drop(event)" ondragover="allowDrop(event)"></div></div>
+            <div class="slot-container"><div class="slot-label">4 (Höflich) 😊</div><div class="drop-slot" data-rank="4" ondrop="drop(event)" ondragover="allowDrop(event)"></div></div>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-reset" onclick="resetTask(2)">Zurücksetzen</button>
+            <button class="btn btn-solve" onclick="solveTask(2)">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Aufgabe 3: Aufstehen -->
+    <div class="exercise-block" id="ex-3">
+        <span class="exercise-title">Gruppe 3: Das Verb „Aufstehen“</span>
+        <div class="item-pool" id="pool-3" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <div class="draggable" draggable="true" id="e3-v1" ondragstart="drag(event)" data-rank="1">Стоять!</div>
+            <div class="draggable" draggable="true" id="e3-v2" ondragstart="drag(event)" data-rank="2">Встань!</div>
+            <div class="draggable" draggable="true" id="e3-v3" ondragstart="drag(event)" data-rank="3">Вставай!</div>
+            <div class="draggable" draggable="true" id="e3-v4" ondragstart="drag(event)" data-rank="4">Вставай, пожалуйста</div>
+        </div>
+        <div class="ranking-grid">
+            <div class="slot-container"><div class="slot-label">1 (Hart) 😡</div><div class="drop-slot" data-rank="1" ondrop="drop(event)" ondragover="allowDrop(event)"></div></div>
+            <div class="slot-container"><div class="slot-label">2 (Stark) 😠</div><div class="drop-slot" data-rank="2" ondrop="drop(event)" ondragover="allowDrop(event)"></div></div>
+            <div class="slot-container"><div class="slot-label">3 (Neutral) 🙂</div><div class="drop-slot" data-rank="3" ondrop="drop(event)" ondragover="allowDrop(event)"></div></div>
+            <div class="slot-container"><div class="slot-label">4 (Höflich) 😊</div><div class="drop-slot" data-rank="4" ondrop="drop(event)" ondragover="allowDrop(event)"></div></div>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-reset" onclick="resetTask(3)">Zurücksetzen</button>
+            <button class="btn btn-solve" onclick="solveTask(3)">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Aufgabe 4: Warten -->
+    <div class="exercise-block" id="ex-4">
+        <span class="exercise-title">Gruppe 4: Das Verb „Warten“</span>
+        <div class="item-pool" id="pool-4" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <div class="draggable" draggable="true" id="e4-v1" ondragstart="drag(event)" data-rank="1">Ждать!</div>
+            <div class="draggable" draggable="true" id="e4-v2" ondragstart="drag(event)" data-rank="2">Подожди!</div>
+            <div class="draggable" draggable="true" id="e4-v3" ondragstart="drag(event)" data-rank="3">Жди!</div>
+            <div class="draggable" draggable="true" id="e4-v4" ondragstart="drag(event)" data-rank="4">Жди, пожалуйста</div>
+        </div>
+        <div class="ranking-grid">
+            <div class="slot-container"><div class="slot-label">1 (Hart) 😡</div><div class="drop-slot" data-rank="1" ondrop="drop(event)" ondragover="allowDrop(event)"></div></div>
+            <div class="slot-container"><div class="slot-label">2 (Stark) 😠</div><div class="drop-slot" data-rank="2" ondrop="drop(event)" ondragover="allowDrop(event)"></div></div>
+            <div class="slot-container"><div class="slot-label">3 (Neutral) 🙂</div><div class="drop-slot" data-rank="3" ondrop="drop(event)" ondragover="allowDrop(event)"></div></div>
+            <div class="slot-container"><div class="slot-label">4 (Höflich) 😊</div><div class="drop-slot" data-rank="4" ondrop="drop(event)" ondragover="allowDrop(event)"></div></div>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-reset" onclick="resetTask(4)">Zurücksetzen</button>
+            <button class="btn btn-solve" onclick="solveTask(4)">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Aufgabe 5: Schreiben -->
+    <div class="exercise-block" id="ex-5">
+        <span class="exercise-title">Gruppe 5: Das Verb „Schreiben“</span>
+        <div class="item-pool" id="pool-5" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <div class="draggable" draggable="true" id="e5-v1" ondragstart="drag(event)" data-rank="1">Писать!</div>
+            <div class="draggable" draggable="true" id="e5-v2" ondragstart="drag(event)" data-rank="2">Напиши!</div>
+            <div class="draggable" draggable="true" id="e5-v3" ondragstart="drag(event)" data-rank="3">Пиши!</div>
+            <div class="draggable" draggable="true" id="e5-v4" ondragstart="drag(event)" data-rank="4">Пиши, пожалуйста</div>
+        </div>
+        <div class="ranking-grid">
+            <div class="slot-container"><div class="slot-label">1 (Hart) 😡</div><div class="drop-slot" data-rank="1" ondrop="drop(event)" ondragover="allowDrop(event)"></div></div>
+            <div class="slot-container"><div class="slot-label">2 (Stark) 😠</div><div class="drop-slot" data-rank="2" ondrop="drop(event)" ondragover="allowDrop(event)"></div></div>
+            <div class="slot-container"><div class="slot-label">3 (Neutral) 🙂</div><div class="drop-slot" data-rank="3" ondrop="drop(event)" ondragover="allowDrop(event)"></div></div>
+            <div class="slot-container"><div class="slot-label">4 (Höflich) 😊</div><div class="drop-slot" data-rank="4" ondrop="drop(event)" ondragover="allowDrop(event)"></div></div>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-reset" onclick="resetTask(5)">Zurücksetzen</button>
+            <button class="btn btn-solve" onclick="solveTask(5)">Lösung anzeigen</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function allowDrop(ev) {
+        ev.preventDefault();
+    }
+
+    function drag(ev) {
+        ev.dataTransfer.setData("text", ev.target.id);
+    }
+
+    function drop(ev) {
+        ev.preventDefault();
+        const data = ev.dataTransfer.getData("text");
+        const draggableElement = document.getElementById(data);
+        const dropzone = ev.target.closest('.drop-slot') || ev.target.closest('.item-pool');
+
+        if (!dropzone) return;
+
+        // Falls die Dropzone bereits ein Element enthält (außer wir ziehen zurück in den Pool)
+        if (dropzone.classList.contains('drop-slot') && dropzone.children.length > 0) {
+            return; 
+        }
+
+        dropzone.appendChild(draggableElement);
+
+        // Feedback-Logik
+        if (dropzone.classList.contains('drop-slot')) {
+            const expectedRank = dropzone.getAttribute('data-rank');
+            const actualRank = draggableElement.getAttribute('data-rank');
+
+            if (expectedRank === actualRank) {
+                draggableElement.classList.add('correct-placed');
+                draggableElement.classList.remove('incorrect-placed');
+            } else {
+                draggableElement.classList.add('incorrect-placed');
+                draggableElement.classList.remove('correct-placed');
+            }
+        } else {
+            // Zurück im Pool -> Farben entfernen
+            draggableElement.classList.remove('correct-placed', 'incorrect-placed');
+        }
+    }
+
+    function resetTask(exId) {
+        const pool = document.getElementById(`pool-${exId}`);
+        const items = document.querySelectorAll(`#ex-${exId} .draggable`);
+        items.forEach(item => {
+            item.classList.remove('correct-placed', 'incorrect-placed');
+            pool.appendChild(item);
+        });
+    }
+
+    function solveTask(exId) {
+        const slots = document.querySelectorAll(`#ex-${exId} .drop-slot`);
+        const items = document.querySelectorAll(`#ex-${exId} .draggable`);
+        
+        slots.forEach(slot => {
+            const rank = slot.getAttribute('data-rank');
+            const correctItem = Array.from(items).find(item => item.getAttribute('data-rank') === rank);
+            if (correctItem) {
+                slot.appendChild(correctItem);
+                correctItem.classList.add('correct-placed');
+                correctItem.classList.remove('incorrect-placed');
+            }
+        });
+    }
+
+    // Shuffle Pools beim Laden
+    window.onload = () => {
+        for (let i = 1; i <= 5; i++) {
+            const pool = document.getElementById(`pool-${i}`);
+            for (let j = pool.children.length; j >= 0; j--) {
+                pool.appendChild(pool.children[Math.random() * j | 0]);
+            }
+        }
+    };
+</script>
+
+</body>
+</html>
